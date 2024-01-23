@@ -35,7 +35,7 @@ public class JSch {
   /**
    * The version number.
    */
-  public static final String VERSION = "0.2.9";
+  public static final String VERSION = "0.2.16";
 
   static Hashtable<String, String> config = new Hashtable<>();
   static {
