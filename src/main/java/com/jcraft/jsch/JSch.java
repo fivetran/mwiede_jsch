@@ -45,8 +45,12 @@ public class JSch {
         "ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,rsa-sha2-512,rsa-sha2-256"));
     config.put("prefer_known_host_key_types",
         Util.getSystemProperty("jsch.prefer_known_host_key_types", "yes"));
+    config.put("enable_strict_kex", Util.getSystemProperty("jsch.enable_strict_kex", "yes"));
+    config.put("require_strict_kex", Util.getSystemProperty("jsch.require_strict_kex", "no"));
     config.put("enable_server_sig_algs",
         Util.getSystemProperty("jsch.enable_server_sig_algs", "yes"));
+    config.put("enable_ext_info_in_auth",
+        Util.getSystemProperty("jsch.enable_ext_info_in_auth", "yes"));
     config.put("cipher.s2c", Util.getSystemProperty("jsch.cipher",
         "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com"));
     config.put("cipher.c2s", Util.getSystemProperty("jsch.cipher",
@@ -99,6 +103,9 @@ public class JSch {
     config.put("curve25519-sha256", "com.jcraft.jsch.DH25519");
     config.put("curve25519-sha256@libssh.org", "com.jcraft.jsch.DH25519");
     config.put("curve448-sha512", "com.jcraft.jsch.DH448");
+    config.put("sntrup761x25519-sha512@openssh.com", "com.jcraft.jsch.DH25519SNTRUP761");
+
+    config.put("sntrup761", "com.jcraft.jsch.bc.SNTRUP761");
 
     config.put("dh", "com.jcraft.jsch.jce.DH");
     config.put("3des-cbc", "com.jcraft.jsch.jce.TripleDESCBC");
@@ -228,12 +235,14 @@ public class JSch {
     config.put("try_additional_pubkey_algorithms",
         Util.getSystemProperty("jsch.try_additional_pubkey_algorithms", "yes"));
     config.put("enable_auth_none", Util.getSystemProperty("jsch.enable_auth_none", "yes"));
+    config.put("use_sftp_write_flush_workaround",
+        Util.getSystemProperty("jsch.use_sftp_write_flush_workaround", "yes"));
 
     config.put("CheckCiphers",
         Util.getSystemProperty("jsch.check_ciphers", "chacha20-poly1305@openssh.com"));
     config.put("CheckMacs", Util.getSystemProperty("jsch.check_macs", ""));
     config.put("CheckKexes", Util.getSystemProperty("jsch.check_kexes",
-        "curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512"));
+        "sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,curve448-sha512"));
     config.put("CheckSignatures",
         Util.getSystemProperty("jsch.check_signatures", "ssh-ed25519,ssh-ed448"));
     config.put("FingerprintHash", Util.getSystemProperty("jsch.fingerprint_hash", "sha256"));
@@ -242,9 +251,11 @@ public class JSch {
     config.put("ClearAllForwardings", "no");
   }
 
+  final InstanceLogger instLogger = new InstanceLogger();
+
   private Vector<Session> sessionPool = new Vector<>();
 
-  private IdentityRepository defaultIdentityRepository = new LocalIdentityRepository(this);
+  private IdentityRepository defaultIdentityRepository = new LocalIdentityRepository(instLogger);
 
   private IdentityRepository identityRepository = defaultIdentityRepository;
 
@@ -291,7 +302,6 @@ public class JSch {
     public void log(int level, String message) {}
   };
   static Logger logger = DEVNULL;
-  private Logger instLogger;
 
   public JSch() {}
 
@@ -480,7 +490,7 @@ public class JSch {
    * @see #addIdentity(String prvkey, String pubkey, byte[] passphrase)
    */
   public void addIdentity(String prvkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, null, this);
+    Identity identity = IdentityFile.newInstance(prvkey, null, instLogger);
     addIdentity(identity, passphrase);
   }
 
@@ -495,7 +505,7 @@ public class JSch {
    * @throws JSchException if <code>passphrase</code> is not right.
    */
   public void addIdentity(String prvkey, String pubkey, byte[] passphrase) throws JSchException {
-    Identity identity = IdentityFile.newInstance(prvkey, pubkey, this);
+    Identity identity = IdentityFile.newInstance(prvkey, pubkey, instLogger);
     addIdentity(identity, passphrase);
   }
 
@@ -511,7 +521,7 @@ public class JSch {
    */
   public void addIdentity(String name, byte[] prvkey, byte[] pubkey, byte[] passphrase)
       throws JSchException {
-    Identity identity = IdentityFile.newInstance(name, prvkey, pubkey, this);
+    Identity identity = IdentityFile.newInstance(name, prvkey, pubkey, instLogger);
     addIdentity(identity, passphrase);
   }
 
@@ -669,10 +679,7 @@ public class JSch {
    *         statically set logger is returned.
    */
   public Logger getInstanceLogger() {
-    if (this.instLogger == null) {
-      return logger;
-    }
-    return instLogger;
+    return instLogger.getLogger();
   }
 
   /**
@@ -682,7 +689,7 @@ public class JSch {
    *        used
    */
   public void setInstanceLogger(Logger logger) {
-    this.instLogger = logger;
+    instLogger.setLogger(logger);
   }
 
   /**
@@ -693,5 +700,22 @@ public class JSch {
    */
   public static Logger getLogger() {
     return logger;
+  }
+
+  static class InstanceLogger {
+    private Logger logger;
+
+    private InstanceLogger() {}
+
+    Logger getLogger() {
+      if (logger == null) {
+        return JSch.logger;
+      }
+      return logger;
+    }
+
+    void setLogger(Logger logger) {
+      this.logger = logger;
+    }
   }
 }

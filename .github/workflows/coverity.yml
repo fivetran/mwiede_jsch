@@ -7,12 +7,12 @@ jobs:
   coverity:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up build JDK
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '17'
+        java-version: '21'
         check-latest: true    
         cache: 'maven'
     - uses: vapier/coverity-scan-action@v1

@@ -1,3 +1,28 @@
+* [0.2.16](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.16)
+  * Add support for sntrup761x25519-sha512@openssh.com KEX algorithm.
+  * Switch to bnd-maven-plugin in order to support Multi-Release OSGi bundle JAR's via supplemental manifest files.
+  * Introduce JSchProxyException to replace generic JschException in Proxy implementations by @mvegter in https://github.com/mwiede/jsch/pull/467
+* [0.2.15](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.15)
+  * address [CVE-2023-48795](https://nvd.nist.gov/vuln/detail/CVE-2023-48795) by adding support for new strict key exchange extension
+  * Add support for `ext-info-in-auth@openssh.com` extension
+* [0.2.14](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.14)
+  * [#450](https://github.com/mwiede/jsch/issues/450) use Socket.connect() with a timeout that has been supported since Java 1.4 instead of using old method of creating a separate thread and joining to that thread with timeout.
+* [0.2.13](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.13)
+  * #411 Add flush operation from Fix added is/jsch#39, with new config option to allow disabling in case it causes regressions.
+  * #403 add a warning when Channel.getInputStream() or Channel.getExtInputStream() is called after Channel.connect().
+* [0.2.12](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.12)
+  * Further refine previous fixes for windows line endings in PEM keys from [#369](https://github.com/mwiede/jsch/issues/369) & [#362](https://github.com/mwiede/jsch/issues/362).
+  * replace call to BigInteger.intValueExact to remain comptaible with Android [#397](https://github.com/mwiede/jsch/pull/397)
+  * Introduce JSchSessionDisconnectException to allow the reasonCode to be retrieved without String parsing [#416](https://github.com/mwiede/jsch/pull/416)
+  * Introduce specific JSchException for HostKey related failures [#410](https://github.com/mwiede/jsch/pull/410)
+* [0.2.11](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.11)
+  * [#369](https://github.com/mwiede/jsch/issues/369) fix multi-line PEM key parsing to work with windows line endings due to regression from previous fix for [#362](https://github.com/mwiede/jsch/issues/362).
+* [0.2.10](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.10)
+  * Fix new Java 21 compiler warning: `possible 'this' escape before subclass is fully initialized`.
+  * Tweak OSGi bundle manifest to allow Log4j 3.
+  * [#362](https://github.com/mwiede/jsch/issues/362) fix PEM key parsing to work with windows line endings.
+  * [#361](https://github.com/mwiede/jsch/issues/361) guard against `UIKeyboardInteractive` implementations that include NULL elements in the `String[]` returned from `promptKeyboardInteractive()`.
+  * Add a default implmentation of the deprecated `decrypt()` method to the `Identity` interface that throws an `UnsupportedOperationException`.
 * [0.2.9](https://github.com/mwiede/jsch/releases/tag/jsch-0.2.9)
   * [#293](https://github.com/mwiede/jsch/issues/293) allow UserAuthNone to be extended.
   * Make JGSS module optional.
